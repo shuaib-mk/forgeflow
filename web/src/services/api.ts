@@ -1,4 +1,4 @@
-import type { Analytics, ApiFailure, AuditEvent, Page, Project, Repository, Task, User, WorkflowRun } from '../types/models'
+import type { Analytics, ApiFailure, AuditEvent, Page, Plugin, Project, Repository, Task, User, WorkflowRun } from '../types/models'
 
 const baseURL = import.meta.env.VITE_API_URL ?? ''
 
@@ -31,5 +31,5 @@ export const api = {
   logs: (id: string) => request<{ items: string[] }>(`/api/v1/runs/${encodeURIComponent(id)}/logs?after=-1`),
   analytics: (organizationId: string) => request<Analytics>(`/api/v1/analytics?organizationId=${encodeURIComponent(organizationId)}`),
   audit: (organizationId: string) => request<Page<AuditEvent>>(`/api/v1/audit?organizationId=${encodeURIComponent(organizationId)}`),
+  plugins: () => request<{ items: Plugin[] }>('/api/v1/plugins'),
 }
-

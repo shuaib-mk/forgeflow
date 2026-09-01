@@ -8,6 +8,8 @@ dist/
 node_modules/
 web/node_modules/
 web/dist/
+*.tsbuildinfo
+web/vite.config.js
+web/vite.config.d.ts
 *.log
 *.out
-

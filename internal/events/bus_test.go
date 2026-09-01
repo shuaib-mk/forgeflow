@@ -14,13 +14,20 @@ func TestBusSubscribePublishAndUnsubscribe(t *testing.T) {
 	calls := 0
 	unsubscribe := bus.Subscribe("project.created", func(_ context.Context, event Event) error {
 		calls++
-		if event.(ProjectCreated).ProjectID != "p1" { t.Fatal("unexpected project") }
+		if event.(ProjectCreated).ProjectID != "p1" {
+			t.Fatal("unexpected project")
+		}
 		return nil
 	})
 	event := ProjectCreated{ProjectID: models.ID("p1"), At: time.Now()}
-	if err := bus.Publish(context.Background(), event); err != nil { t.Fatal(err) }
+	if err := bus.Publish(context.Background(), event); err != nil {
+		t.Fatal(err)
+	}
 	unsubscribe()
-	if err := bus.Publish(context.Background(), event); err != nil { t.Fatal(err) }
-	if calls != 1 { t.Fatalf("calls = %d, want 1", calls) }
+	if err := bus.Publish(context.Background(), event); err != nil {
+		t.Fatal(err)
+	}
+	if calls != 1 {
+		t.Fatalf("calls = %d, want 1", calls)
+	}
 }
-

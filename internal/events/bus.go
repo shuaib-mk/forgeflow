@@ -14,18 +14,29 @@ type Event interface {
 	OccurredAt() time.Time
 }
 
-type ProjectCreated struct { ProjectID models.ID; ActorID models.ID; At time.Time }
-func (e ProjectCreated) Name() string { return "project.created" }
+type ProjectCreated struct {
+	ProjectID models.ID
+	ActorID   models.ID
+	At        time.Time
+}
+
+func (e ProjectCreated) Name() string          { return "project.created" }
 func (e ProjectCreated) OccurredAt() time.Time { return e.At }
 
-type WorkflowCompleted struct { RunID models.ID; ProjectID models.ID; Status models.RunStatus; At time.Time }
-func (e WorkflowCompleted) Name() string { return "workflow.completed" }
+type WorkflowCompleted struct {
+	RunID     models.ID
+	ProjectID models.ID
+	Status    models.RunStatus
+	At        time.Time
+}
+
+func (e WorkflowCompleted) Name() string          { return "workflow.completed" }
 func (e WorkflowCompleted) OccurredAt() time.Time { return e.At }
 
 type Handler func(context.Context, Event) error
 
 type Bus struct {
-	mu sync.RWMutex
+	mu       sync.RWMutex
 	handlers map[string][]Handler
 }
 
@@ -50,11 +61,12 @@ func (b *Bus) Publish(ctx context.Context, event Event) error {
 	handlers := append([]Handler(nil), b.handlers[event.Name()]...)
 	b.mu.RUnlock()
 	for _, handler := range handlers {
-		if handler == nil { continue }
+		if handler == nil {
+			continue
+		}
 		if err := handler(ctx, event); err != nil {
 			return fmt.Errorf("handle %s: %w", event.Name(), err)
 		}
 	}
 	return nil
 }
-

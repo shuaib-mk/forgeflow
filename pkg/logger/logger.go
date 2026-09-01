@@ -54,8 +54,7 @@ func redact(attr slog.Attr) slog.Attr {
 		for i := range items {
 			items[i] = redact(items[i])
 		}
-		return slog.Group(attr.Key, items...)
+		return slog.Attr{Key: attr.Key, Value: slog.GroupValue(items...)}
 	}
 	return attr
 }
-

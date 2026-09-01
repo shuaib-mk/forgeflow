@@ -6,5 +6,5 @@ export type WorkflowRun = { id: string; workflowId: string; projectId: string; s
 export type AuditEvent = { id: string; action: string; resourceType: string; resourceId: string; requestId: string; createdAt: string }
 export type Page<T> = { items: T[]; page: number; pageSize: number; totalItems: number; totalPages: number }
 export type Analytics = { projects: number; openTasks: number; runningWorkflows: number; failedRuns: number }
+export type Plugin = { id: string; name: string; version: string; description: string; enabled: boolean }
 export type ApiFailure = { error: { code: string; message: string; requestId: string; fields?: Record<string, string> } }
-

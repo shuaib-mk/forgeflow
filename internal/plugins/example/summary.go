@@ -18,14 +18,19 @@ func (Summary) Manifest() plugins.Manifest {
 
 func (Summary) Register(registrar *plugins.Registrar) error {
 	return registrar.WorkflowStep("summary.write", func(_ context.Context, input plugins.StepInput) (plugins.StepOutput, error) {
-		if len(input.Args) != 2 { return plugins.StepOutput{}, fmt.Errorf("summary.write expects a file name and message") }
+		if len(input.Args) != 2 {
+			return plugins.StepOutput{}, fmt.Errorf("summary.write expects a file name and message")
+		}
 		path := filepath.Join(input.WorkingDirectory, filepath.Base(input.Args[0]))
 		content, err := json.MarshalIndent(map[string]string{"summary": input.Args[1]}, "", "  ")
-		if err != nil { return plugins.StepOutput{}, err }
-		if err := os.WriteFile(path, append(content, '\n'), 0o600); err != nil { return plugins.StepOutput{}, fmt.Errorf("write summary: %w", err) }
+		if err != nil {
+			return plugins.StepOutput{}, err
+		}
+		if err := os.WriteFile(path, append(content, '\n'), 0o600); err != nil {
+			return plugins.StepOutput{}, fmt.Errorf("write summary: %w", err)
+		}
 		return plugins.StepOutput{Logs: "summary written", Metadata: map[string]string{"path": path}}, nil
 	})
 }
 
 func (Summary) Close(context.Context) error { return nil }
-

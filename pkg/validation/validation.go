@@ -19,4 +19,3 @@ func Email(value string) bool {
 }
 
 func Slug(value string) bool { return len(value) <= 63 && slugPattern.MatchString(value) }
-

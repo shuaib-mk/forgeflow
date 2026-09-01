@@ -11,15 +11,15 @@ import (
 )
 
 type Config struct {
-	Environment     string
-	HTTPAddr        string
-	DatabaseURL     string
-	RedisURL        string
-	SessionSecret   string
-	WorkspaceRoot   string
-	LogLevel        string
+	Environment       string
+	HTTPAddr          string
+	DatabaseURL       string
+	RedisURL          string
+	SessionSecret     string
+	WorkspaceRoot     string
+	LogLevel          string
 	WorkerConcurrency int
-	AllowedOrigins  []string
+	AllowedOrigins    []string
 }
 
 func Load() (Config, error) {
@@ -32,15 +32,15 @@ func Load() (Config, error) {
 		return Config{}, fmt.Errorf("FORGEFLOW_WORKER_CONCURRENCY: %w", err)
 	}
 	cfg := Config{
-		Environment: get("FORGEFLOW_ENV", "development"),
-		HTTPAddr: get("FORGEFLOW_HTTP_ADDR", ":8080"),
-		DatabaseURL: get("FORGEFLOW_DATABASE_URL", "postgres://forgeflow:forgeflow@localhost:5432/forgeflow?sslmode=disable"),
-		RedisURL: get("FORGEFLOW_REDIS_URL", "redis://localhost:6379/0"),
-		SessionSecret: os.Getenv("FORGEFLOW_SESSION_SECRET"),
-		WorkspaceRoot: get("FORGEFLOW_WORKSPACE_ROOT", filepath.Join(cwd, "data", "workspaces")),
-		LogLevel: get("FORGEFLOW_LOG_LEVEL", "info"),
+		Environment:       get("FORGEFLOW_ENV", "development"),
+		HTTPAddr:          get("FORGEFLOW_HTTP_ADDR", ":8080"),
+		DatabaseURL:       get("FORGEFLOW_DATABASE_URL", "postgres://forgeflow:forgeflow@localhost:5432/forgeflow?sslmode=disable"),
+		RedisURL:          get("FORGEFLOW_REDIS_URL", "redis://localhost:6379/0"),
+		SessionSecret:     os.Getenv("FORGEFLOW_SESSION_SECRET"),
+		WorkspaceRoot:     get("FORGEFLOW_WORKSPACE_ROOT", filepath.Join(cwd, "data", "workspaces")),
+		LogLevel:          get("FORGEFLOW_LOG_LEVEL", "info"),
 		WorkerConcurrency: concurrency,
-		AllowedOrigins: splitCSV(get("FORGEFLOW_ALLOWED_ORIGINS", "http://localhost:5173")),
+		AllowedOrigins:    splitCSV(get("FORGEFLOW_ALLOWED_ORIGINS", "http://localhost:5173")),
 	}
 	return cfg, cfg.Validate()
 }
@@ -81,4 +81,3 @@ func splitCSV(value string) []string {
 	}
 	return values
 }
-

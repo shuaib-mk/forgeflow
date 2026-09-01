@@ -31,4 +31,3 @@ type TransitionError struct {
 func (e *TransitionError) Error() string {
 	return fmt.Sprintf("invalid %s transition from %q to %q", e.Entity, e.From, e.To)
 }
-

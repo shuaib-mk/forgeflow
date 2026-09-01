@@ -19,4 +19,3 @@ func Transition(run *models.WorkflowRun, to models.RunStatus) error {
 	run.Status = to
 	return nil
 }
-

@@ -167,13 +167,13 @@ type TestRun struct {
 }
 
 type TestResult struct {
-	ID         ID            `json:"id"`
-	TestRunID  ID            `json:"testRunId"`
-	Suite      string        `json:"suite"`
-	Name       string        `json:"name"`
-	Status     string        `json:"status"`
-	DurationMS int64         `json:"durationMs"`
-	Message    string        `json:"message,omitempty"`
+	ID         ID     `json:"id"`
+	TestRunID  ID     `json:"testRunId"`
+	Suite      string `json:"suite"`
+	Name       string `json:"name"`
+	Status     string `json:"status"`
+	DurationMS int64  `json:"durationMs"`
+	Message    string `json:"message,omitempty"`
 }
 
 type AuditEvent struct {
@@ -208,11 +208,11 @@ type Plugin struct {
 }
 
 type ProjectMetric struct {
-	ID        ID        `json:"id"`
-	ProjectID ID        `json:"projectId"`
-	Name      string    `json:"name"`
-	Value     float64   `json:"value"`
-	Unit      string    `json:"unit"`
+	ID         ID        `json:"id"`
+	ProjectID  ID        `json:"projectId"`
+	Name       string    `json:"name"`
+	Value      float64   `json:"value"`
+	Unit       string    `json:"unit"`
 	RecordedAt time.Time `json:"recordedAt"`
 }
 
@@ -223,4 +223,3 @@ type Page[T any] struct {
 	TotalItems int `json:"totalItems"`
 	TotalPages int `json:"totalPages"`
 }
-

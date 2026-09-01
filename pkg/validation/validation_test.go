@@ -13,4 +13,3 @@ func TestSlug(t *testing.T) {
 		}
 	}
 }
-

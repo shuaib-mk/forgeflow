@@ -22,8 +22,12 @@ steps:
     depends_on: [lint]
     retries: 1
 `))
-	if err != nil { t.Fatal(err) }
-	if definition.Steps[0].Timeout != 2*time.Minute { t.Fatalf("timeout = %s", definition.Steps[0].Timeout) }
+	if err != nil {
+		t.Fatal(err)
+	}
+	if definition.Steps[0].Timeout != 2*time.Minute {
+		t.Fatalf("timeout = %s", definition.Steps[0].Timeout)
+	}
 }
 
 func TestValidateDetectsCycle(t *testing.T) {
@@ -38,12 +42,15 @@ steps:
     command: echo
     depends_on: [first]
 `))
-	if err == nil || !strings.Contains(err.Error(), "cycle") { t.Fatalf("expected cycle error, got %v", err) }
+	if err == nil || !strings.Contains(err.Error(), "cycle") {
+		t.Fatalf("expected cycle error, got %v", err)
+	}
 }
 
 func TestParseRejectsUnknownFields(t *testing.T) {
 	t.Parallel()
 	_, err := Parse(strings.NewReader("name: test\nunknown: value\nsteps: []\n"))
-	if err == nil { t.Fatal("expected unknown field error") }
+	if err == nil {
+		t.Fatal("expected unknown field error")
+	}
 }
-

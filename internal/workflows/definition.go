@@ -41,16 +41,30 @@ func Validate(definition *Definition) error {
 	byID := make(map[string]int, len(definition.Steps))
 	for index := range definition.Steps {
 		step := &definition.Steps[index]
-		if strings.TrimSpace(step.ID) == "" { return fmt.Errorf("step %d: id is required", index+1) }
-		if _, exists := byID[step.ID]; exists { return fmt.Errorf("step %q: duplicate id", step.ID) }
-		if strings.TrimSpace(step.Name) == "" { step.Name = step.ID }
-		if strings.TrimSpace(step.Command) == "" { return fmt.Errorf("step %q: command is required", step.ID) }
-		if strings.ContainsRune(step.Command, '\x00') { return fmt.Errorf("step %q: command contains a null byte", step.ID) }
-		if step.Retries < 0 || step.Retries > 10 { return fmt.Errorf("step %q: retries must be between 0 and 10", step.ID) }
+		if strings.TrimSpace(step.ID) == "" {
+			return fmt.Errorf("step %d: id is required", index+1)
+		}
+		if _, exists := byID[step.ID]; exists {
+			return fmt.Errorf("step %q: duplicate id", step.ID)
+		}
+		if strings.TrimSpace(step.Name) == "" {
+			step.Name = step.ID
+		}
+		if strings.TrimSpace(step.Command) == "" {
+			return fmt.Errorf("step %q: command is required", step.ID)
+		}
+		if strings.ContainsRune(step.Command, '\x00') {
+			return fmt.Errorf("step %q: command contains a null byte", step.ID)
+		}
+		if step.Retries < 0 || step.Retries > 10 {
+			return fmt.Errorf("step %q: retries must be between 0 and 10", step.ID)
+		}
 		step.Timeout = 15 * time.Minute
 		if step.TimeoutText != "" {
 			timeout, err := time.ParseDuration(step.TimeoutText)
-			if err != nil || timeout < time.Second || timeout > 24*time.Hour { return fmt.Errorf("step %q: timeout must be between 1s and 24h", step.ID) }
+			if err != nil || timeout < time.Second || timeout > 24*time.Hour {
+				return fmt.Errorf("step %q: timeout must be between 1s and 24h", step.ID)
+			}
 			step.Timeout = timeout
 		}
 		byID[step.ID] = index
@@ -58,9 +72,15 @@ func Validate(definition *Definition) error {
 	for _, step := range definition.Steps {
 		seen := map[string]bool{}
 		for _, dependency := range step.DependsOn {
-			if dependency == step.ID { return fmt.Errorf("step %q: cannot depend on itself", step.ID) }
-			if _, exists := byID[dependency]; !exists { return fmt.Errorf("step %q: dependency %q does not exist", step.ID, dependency) }
-			if seen[dependency] { return fmt.Errorf("step %q: duplicate dependency %q", step.ID, dependency) }
+			if dependency == step.ID {
+				return fmt.Errorf("step %q: cannot depend on itself", step.ID)
+			}
+			if _, exists := byID[dependency]; !exists {
+				return fmt.Errorf("step %q: dependency %q does not exist", step.ID, dependency)
+			}
+			if seen[dependency] {
+				return fmt.Errorf("step %q: duplicate dependency %q", step.ID, dependency)
+			}
 			seen[dependency] = true
 		}
 	}
@@ -72,7 +92,9 @@ func Validate(definition *Definition) error {
 
 func findCycle(steps []models.WorkflowStep) []string {
 	dependencies := make(map[string][]string, len(steps))
-	for _, step := range steps { dependencies[step.ID] = step.DependsOn }
+	for _, step := range steps {
+		dependencies[step.ID] = step.DependsOn
+	}
 	state := map[string]int{}
 	stack := []string{}
 	var visit func(string) []string
@@ -82,11 +104,15 @@ func findCycle(steps []models.WorkflowStep) []string {
 		for _, dependency := range dependencies[id] {
 			if state[dependency] == 1 {
 				start := 0
-				for stack[start] != dependency { start++ }
+				for stack[start] != dependency {
+					start++
+				}
 				return append(append([]string(nil), stack[start:]...), dependency)
 			}
 			if state[dependency] == 0 {
-				if cycle := visit(dependency); cycle != nil { return cycle }
+				if cycle := visit(dependency); cycle != nil {
+					return cycle
+				}
 			}
 		}
 		stack = stack[:len(stack)-1]
@@ -95,9 +121,10 @@ func findCycle(steps []models.WorkflowStep) []string {
 	}
 	for id := range dependencies {
 		if state[id] == 0 {
-			if cycle := visit(id); cycle != nil { return cycle }
+			if cycle := visit(id); cycle != nil {
+				return cycle
+			}
 		}
 	}
 	return nil
 }
-
