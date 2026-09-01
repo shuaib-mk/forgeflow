@@ -1,0 +1,80 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  backend:
+    name: Go quality gates
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/setup-go@40f1582b2485089dde7abd97c1529aa768e1baff # v5
+        with: { go-version-file: go.mod, cache: true }
+      - name: Check formatting
+        run: test -z "$(gofmt -l cmd internal pkg cli tests)"
+      - name: Static analysis
+        run: go vet ./cmd/... ./internal/... ./pkg/... ./cli/...
+      - name: Unit tests
+        run: go test -race -count=1 -coverprofile=coverage.out ./internal/... ./pkg/... ./cli/...
+      - name: Build binaries
+        run: go build -trimpath ./cmd/...
+
+  frontend:
+    name: Dashboard quality gates
+    runs-on: ubuntu-24.04
+    defaults: { run: { working-directory: web } }
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with: { node-version: 24, cache: npm, cache-dependency-path: web/package-lock.json }
+      - run: npm ci --ignore-scripts
+      - run: npm run lint
+      - run: npm test -- --run
+      - run: npm run build
+      - run: npm audit --audit-level=high
+
+  integration:
+    name: PostgreSQL integration
+    runs-on: ubuntu-24.04
+    services:
+      postgres:
+        image: postgres:17.5-alpine3.21
+        env: { POSTGRES_DB: forgeflow, POSTGRES_USER: forgeflow, POSTGRES_PASSWORD: forgeflow }
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U forgeflow -d forgeflow"
+          --health-interval 5s --health-timeout 3s --health-retries 20
+      redis:
+        image: redis:7.4.4-alpine3.21
+        ports: ["6379:6379"]
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s --health-timeout 3s --health-retries 20
+    env:
+      FORGEFLOW_DATABASE_URL: postgres://forgeflow:forgeflow@localhost:5432/forgeflow?sslmode=disable
+      FORGEFLOW_REDIS_URL: redis://localhost:6379/0
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/setup-go@40f1582b2485089dde7abd97c1529aa768e1baff # v5
+        with: { go-version-file: go.mod, cache: true }
+      - run: go test -tags=integration -count=1 ./tests/integration/...
+
+  containers:
+    name: Reproducible containers
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: docker/build-push-action@10e90e3645eae34f1e60eeb005ba3a3d33f178e8 # v6
+        with: { context: ., target: api, push: false }
+      - uses: docker/build-push-action@10e90e3645eae34f1e60eeb005ba3a3d33f178e8 # v6
+        with: { context: web, push: false }
+

@@ -35,7 +35,7 @@ fmt: ## Format source files
 	cd web && npm run format
 
 lint: ## Run static checks
-	go vet ./...
+	go vet ./cmd/... ./internal/... ./pkg/... ./cli/...
 	cd web && npm run lint
 
 compose-up: ## Start dependencies
@@ -46,4 +46,3 @@ compose-down: ## Stop local services
 
 migrate: ## Apply database migrations
 	go run ./cmd/forgeflow-migrate up
-

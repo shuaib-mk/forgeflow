@@ -1,0 +1,14 @@
+{
+  "name": "ForgeFlow",
+  "dockerComposeFile": ["../docker-compose.yml"],
+  "service": "api",
+  "runServices": ["postgres", "redis"],
+  "workspaceFolder": "/workspace",
+  "overrideCommand": true,
+  "customizations": {
+    "vscode": {
+      "extensions": ["golang.go", "dbaeumer.vscode-eslint", "ms-azuretools.vscode-docker"]
+    }
+  }
+}
+
