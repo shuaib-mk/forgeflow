@@ -15,15 +15,17 @@ docker compose up --build
 
 Open <http://localhost:5173>. The API is available at <http://localhost:8080>, with health checks at `/health` and `/ready`.
 
-Create the first account with the versioned API, then paste the returned organization ID into Dashboard → Settings:
+Open the dashboard, choose **Create account**, and enter your name, organization, email, and password. ForgeFlow creates the organization, selects it automatically, and signs you in. The opaque session token is stored in browser session storage so closing the tab clears it.
 
-```sh
-curl -X POST http://localhost:8080/api/v1/auth/register \
-  -H 'Content-Type: application/json' \
-  -d '{"email":"dev@example.test","displayName":"Local Dev","password":"replace-this-password","organizationName":"Example","organizationSlug":"example"}'
-```
+## Dashboard workflow
 
-Log in through the dashboard. ForgeFlow stores the opaque session token in browser session storage so closing the tab clears it.
+1. Create a project from **Projects**.
+2. Open the project and add tasks, initialize or connect a repository, and create a workflow. Workflow commands run in the project's first connected repository (or the workspace root when none is connected).
+3. Run a workflow from the project page.
+4. Watch its status and logs update automatically, then review all executions under **Runs**.
+5. Use **Analytics** and **Audit log** to review workspace activity.
+
+The dashboard covers the complete local workflow; the CLI and REST API are optional automation interfaces.
 
 ## Features
 
@@ -105,7 +107,7 @@ For a CI-equivalent host check, run `scripts/verify.sh`. Integration and E2E sui
 - Runs remain queued: ensure `forgeflow-worker` is running and can reach Redis and PostgreSQL.
 - Repository rejected: resolve the checkout beneath `FORGEFLOW_WORKSPACE_ROOT`; symlink escapes are rejected.
 - Workflow command missing: executables must be installed inside the worker environment and commands do not use implicit shell expansion.
-- Dashboard is empty: set the organization UUID under Settings.
+- Dashboard is empty: use the organization selector in the sidebar or Settings. Memberships are discovered automatically after sign-in.
 - Port already allocated: change the host-side port in `docker-compose.yml`; internal ports should remain unchanged.
 
 ## Security
