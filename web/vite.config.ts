@@ -4,5 +4,14 @@ import react from '@vitejs/plugin-react'
 export default defineConfig({
   plugins: [react()],
   server: { proxy: { '/api': 'http://localhost:8080', '/health': 'http://localhost:8080' } },
-  test: { environment: 'jsdom', globals: true, setupFiles: './src/test/setup.ts' },
+  test: {
+    environment: 'jsdom',
+    globals: true,
+    setupFiles: './src/test/setup.ts',
+    coverage: {
+      provider: 'v8',
+      reporter: ['text', 'json-summary'],
+      thresholds: { statements: 70, lines: 70, branches: 60, functions: 40 },
+    },
+  },
 })
