@@ -1,6 +1,6 @@
 .DEFAULT_GOAL := help
 
-.PHONY: help setup dev build test test-unit test-integration test-e2e lint fmt compose-up compose-down migrate
+.PHONY: help setup dev build test test-unit test-integration test-e2e lint fmt verify compose-up compose-down migrate
 
 help: ## Show available targets
 	@awk 'BEGIN {FS = ":.*## "}; /^[a-zA-Z_-]+:.*## / {printf "%-20s %s\n", $$1, $$2}' $(MAKEFILE_LIST)
@@ -37,6 +37,9 @@ fmt: ## Format source files
 lint: ## Run static checks
 	go vet ./cmd/... ./internal/... ./pkg/... ./cli/...
 	cd web && npm run lint
+
+verify: ## Run fresh-clone-equivalent unit, coverage, container, integration, and E2E checks
+	./scripts/verify.sh
 
 compose-up: ## Start dependencies
 	docker compose up -d postgres redis
