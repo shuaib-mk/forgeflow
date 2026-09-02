@@ -49,9 +49,9 @@ type Registration struct {
 	Organization models.Organization `json:"organization"`
 }
 type Session struct {
-	Token     string
-	ExpiresAt time.Time
-	User      models.User
+	Token     string      `json:"token"`
+	ExpiresAt time.Time   `json:"expiresAt"`
+	User      models.User `json:"user"`
 }
 
 func (s *Service) Register(ctx context.Context, input RegisterInput) (Registration, error) {

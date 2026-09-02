@@ -2,6 +2,7 @@ package auth
 
 import (
 	"context"
+	"encoding/json"
 	"testing"
 	"time"
 
@@ -70,5 +71,27 @@ func TestLoginUsesGenericUnauthorizedError(t *testing.T) {
 	service := NewService(&memoryRepository{})
 	if _, err := service.Login(context.Background(), "missing@example.com", "wrong"); err != domain.ErrUnauthorized {
 		t.Fatalf("error=%v", err)
+	}
+}
+
+func TestSessionJSONContract(t *testing.T) {
+	t.Parallel()
+	payload, err := json.Marshal(Session{Token: "token", ExpiresAt: time.Unix(0, 0).UTC(), User: models.User{ID: "user-id"}})
+	if err != nil {
+		t.Fatal(err)
+	}
+	var fields map[string]json.RawMessage
+	if err := json.Unmarshal(payload, &fields); err != nil {
+		t.Fatal(err)
+	}
+	for _, name := range []string{"token", "expiresAt", "user"} {
+		if _, ok := fields[name]; !ok {
+			t.Fatalf("missing JSON field %q in %s", name, payload)
+		}
+	}
+	for _, name := range []string{"Token", "ExpiresAt", "User"} {
+		if _, ok := fields[name]; ok {
+			t.Fatalf("unexpected legacy JSON field %q in %s", name, payload)
+		}
 	}
 }
