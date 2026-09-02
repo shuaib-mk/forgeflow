@@ -30,9 +30,8 @@ jobs:
       - uses: actions/setup-go@40f1582b2485089dde7abd97c1529aa768e1baff # v5
         with: { go-version-file: go.mod, cache: true }
       - uses: golang/govulncheck-action@032d45514ae346b1db93c04b0c90b841c370344f # v1
-        with: { go-package: './cmd/... ./internal/... ./pkg/... ./cli/...' }
+        with: { go-package: './...' }
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with: { node-version: 24, cache: npm, cache-dependency-path: web/package-lock.json }
       - run: npm ci --ignore-scripts && npm audit --audit-level=high
         working-directory: web
-

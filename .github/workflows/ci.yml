@@ -20,7 +20,12 @@ jobs:
       - uses: actions/setup-go@40f1582b2485089dde7abd97c1529aa768e1baff # v5
         with: { go-version-file: go.mod, cache: true }
       - name: Check formatting
-        run: test -z "$(gofmt -l cmd internal pkg cli tests)"
+        run: |
+          unformatted="$(gofmt -l $(git ls-files '*.go'))"
+          if [ -n "$unformatted" ]; then
+            printf 'Unformatted Go files:\n%s\n' "$unformatted"
+            exit 1
+          fi
       - name: Static analysis
         run: go vet ./cmd/... ./internal/... ./pkg/... ./cli/...
       - name: Unit tests
@@ -77,4 +82,3 @@ jobs:
         with: { context: ., target: api, push: false }
       - uses: docker/build-push-action@10e90e3645eae34f1e60eeb005ba3a3d33f178e8 # v6
         with: { context: web, push: false }
-
