@@ -30,7 +30,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const loadOrganizations = async (preferred = organizationId) => {
     const result = await api.organizations()
     setOrganizations(result.items)
-    const selected = result.items.some(item => item.organization.id === preferred) ? preferred : (result.items[0]?.organization.id ?? '')
+    const selected = result.items.some((item) => item.organization.id === preferred) ? preferred : (result.items[0]?.organization.id ?? '')
     if (selected) selectOrganization(selected)
   }
 
@@ -79,7 +79,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }
 
-  return <AuthContext.Provider value={{ user, organizations, organizationId, loading, login, register, selectOrganization, logout }}>{children}</AuthContext.Provider>
+  return (
+    <AuthContext.Provider value={{ user, organizations, organizationId, loading, login, register, selectOrganization, logout }}>
+      {children}
+    </AuthContext.Provider>
+  )
 }
 
 export function useAuth() {

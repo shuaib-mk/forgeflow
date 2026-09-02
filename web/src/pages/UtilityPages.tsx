@@ -4,6 +4,83 @@ import { useAsync } from '../hooks/useAsync'
 import { Page } from './DashboardPage'
 import { useAuth } from '../stores/AuthContext'
 
-export function SettingsPage() { const { organizations, organizationId, selectOrganization } = useAuth(); const membership = organizations.find(item => item.organization.id === organizationId); return <Page><div className="page-title"><div><span className="eyebrow">Workspace preferences</span><h1>Settings</h1><p>Choose which organization the dashboard displays.</p></div></div><section className="form-card narrow-card"><label>Active organization<select value={organizationId} onChange={event => selectOrganization(event.target.value)}>{organizations.map(item => <option value={item.organization.id} key={item.organization.id}>{item.organization.name}</option>)}</select><small>{membership ? `Signed in as ${membership.role}. Organization ID: ${membership.organization.id}` : 'No organization membership found.'}</small></label><div className="success" role="status">Organization selection is saved automatically.</div></section></Page> }
-export function PluginsPage() { const plugins = useAsync(() => api.plugins(), []); return <Page><div className="page-title"><div><span className="eyebrow">Trusted extensions</span><h1>Plugins</h1><p>Compiled integrations for workflow steps, notifications, analytics, and repositories.</p></div></div>{plugins.loading ? <LoadingState /> : plugins.error ? <ErrorState error={plugins.error} retry={plugins.reload} /> : plugins.data?.items.length ? <div className="card-grid">{plugins.data.items.map(plugin => <article className="project-card" key={plugin.id}><span className="project-icon large">⬡</span><h2>{plugin.name}</h2><p>{plugin.description}</p><footer><code>{plugin.version}</code><span>{plugin.enabled ? 'Enabled' : 'Disabled'}</span></footer></article>)}</div> : <EmptyState title="No plugins enabled" body="The built-in run-summary example is available to developers. ForgeFlow intentionally does not load untrusted binaries at runtime." />}</Page> }
-export function NotFoundPage() { return <Page><EmptyState title="Page not found" body="The route you requested does not exist." /></Page> }
+export function SettingsPage() {
+  const { organizations, organizationId, selectOrganization } = useAuth()
+  const membership = organizations.find((item) => item.organization.id === organizationId)
+  return (
+    <Page>
+      <div className="page-title">
+        <div>
+          <span className="eyebrow">Workspace preferences</span>
+          <h1>Settings</h1>
+          <p>Choose which organization the dashboard displays.</p>
+        </div>
+      </div>
+      <section className="form-card narrow-card">
+        <label>
+          Active organization
+          <select value={organizationId} onChange={(event) => selectOrganization(event.target.value)}>
+            {organizations.map((item) => (
+              <option value={item.organization.id} key={item.organization.id}>
+                {item.organization.name}
+              </option>
+            ))}
+          </select>
+          <small>
+            {membership
+              ? `Signed in as ${membership.role}. Organization ID: ${membership.organization.id}`
+              : 'No organization membership found.'}
+          </small>
+        </label>
+        <div className="success" role="status">
+          Organization selection is saved automatically.
+        </div>
+      </section>
+    </Page>
+  )
+}
+export function PluginsPage() {
+  const plugins = useAsync(() => api.plugins(), [])
+  return (
+    <Page>
+      <div className="page-title">
+        <div>
+          <span className="eyebrow">Trusted extensions</span>
+          <h1>Plugins</h1>
+          <p>Compiled integrations for workflow steps, notifications, analytics, and repositories.</p>
+        </div>
+      </div>
+      {plugins.loading ? (
+        <LoadingState />
+      ) : plugins.error ? (
+        <ErrorState error={plugins.error} retry={plugins.reload} />
+      ) : plugins.data?.items.length ? (
+        <div className="card-grid">
+          {plugins.data.items.map((plugin) => (
+            <article className="project-card" key={plugin.id}>
+              <span className="project-icon large">⬡</span>
+              <h2>{plugin.name}</h2>
+              <p>{plugin.description}</p>
+              <footer>
+                <code>{plugin.version}</code>
+                <span>{plugin.enabled ? 'Enabled' : 'Disabled'}</span>
+              </footer>
+            </article>
+          ))}
+        </div>
+      ) : (
+        <EmptyState
+          title="No plugins enabled"
+          body="The built-in run-summary example is available to developers. ForgeFlow intentionally does not load untrusted binaries at runtime."
+        />
+      )}
+    </Page>
+  )
+}
+export function NotFoundPage() {
+  return (
+    <Page>
+      <EmptyState title="Page not found" body="The route you requested does not exist." />
+    </Page>
+  )
+}

@@ -6,6 +6,109 @@ import { EmptyState, ErrorState, LoadingState } from '../components/States'
 import { Page } from './DashboardPage'
 import { useAuth } from '../stores/AuthContext'
 
-export function ProjectsPage() { const { organizationId } = useAuth(); const [search, setSearch] = useState(''); const projects = useAsync(() => api.projects(organizationId, search), [organizationId, search]); return <Page><div className="page-title"><div><span className="eyebrow">Workspace</span><h1>Projects</h1><p>Repositories, tasks, and workflows organized around delivery.</p></div><Link className="button primary" to="/projects/new">＋ New project</Link></div><div className="toolbar"><label className="search"><span aria-hidden="true">⌕</span><span className="sr-only">Search projects</span><input value={search} onChange={event => setSearch(event.target.value)} placeholder="Search projects" /></label></div>{projects.loading ? <LoadingState /> : projects.error ? <ErrorState error={projects.error} retry={projects.reload} /> : projects.data?.items.length ? <div className="card-grid">{projects.data.items.map(project => <Link className="project-card" to={`/projects/${project.id}`} key={project.id}><span className="project-icon large">{project.name.slice(0, 1)}</span><h2>{project.name}</h2><p>{project.description || 'No description yet.'}</p><footer><code>{project.slug}</code><span>Open →</span></footer></Link>)}</div> : <EmptyState title="No matching projects" body="Try a different search or create the first project." />}</Page> }
+export function ProjectsPage() {
+  const { organizationId } = useAuth()
+  const [search, setSearch] = useState('')
+  const projects = useAsync(() => api.projects(organizationId, search), [organizationId, search])
+  return (
+    <Page>
+      <div className="page-title">
+        <div>
+          <span className="eyebrow">Workspace</span>
+          <h1>Projects</h1>
+          <p>Repositories, tasks, and workflows organized around delivery.</p>
+        </div>
+        <Link className="button primary" to="/projects/new">
+          ＋ New project
+        </Link>
+      </div>
+      <div className="toolbar">
+        <label className="search">
+          <span aria-hidden="true">⌕</span>
+          <span className="sr-only">Search projects</span>
+          <input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Search projects" />
+        </label>
+      </div>
+      {projects.loading ? (
+        <LoadingState />
+      ) : projects.error ? (
+        <ErrorState error={projects.error} retry={projects.reload} />
+      ) : projects.data?.items.length ? (
+        <div className="card-grid">
+          {projects.data.items.map((project) => (
+            <Link className="project-card" to={`/projects/${project.id}`} key={project.id}>
+              <span className="project-icon large">{project.name.slice(0, 1)}</span>
+              <h2>{project.name}</h2>
+              <p>{project.description || 'No description yet.'}</p>
+              <footer>
+                <code>{project.slug}</code>
+                <span>Open →</span>
+              </footer>
+            </Link>
+          ))}
+        </div>
+      ) : (
+        <EmptyState title="No matching projects" body="Try a different search or create the first project." />
+      )}
+    </Page>
+  )
+}
 
-export function NewProjectPage() { const { organizationId } = useAuth(); const navigate = useNavigate(); const [error, setError] = useState(''); const submit = async (event: FormEvent<HTMLFormElement>) => { event.preventDefault(); const data = new FormData(event.currentTarget); try { const project = await api.createProject({ organizationId, name: String(data.get('name')), slug: String(data.get('slug')), description: String(data.get('description')) }); navigate(`/projects/${project.id}`) } catch (value) { setError(value instanceof Error ? value.message : 'Could not create project') } }; return <Page><div className="narrow"><Link to="/projects" className="back">← Projects</Link><span className="eyebrow">New project</span><h1>Start a delivery workspace</h1><p>Connect tasks, local repositories, and repeatable workflows around a single outcome.</p><form className="form-card" onSubmit={submit}>{error && <div className="inline-error" role="alert">{error}</div>}<label>Name<input name="name" maxLength={100} required /></label><label>Slug<input name="slug" pattern="[a-z0-9]+(-[a-z0-9]+)*" required /><small>Lowercase letters, numbers, and single hyphens.</small></label><label>Description<textarea name="description" rows={5} maxLength={2000} /></label><div className="form-actions"><Link className="button secondary" to="/projects">Cancel</Link><button className="button primary">Create project</button></div></form></div></Page> }
+export function NewProjectPage() {
+  const { organizationId } = useAuth()
+  const navigate = useNavigate()
+  const [error, setError] = useState('')
+  const submit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+    const data = new FormData(event.currentTarget)
+    try {
+      const project = await api.createProject({
+        organizationId,
+        name: String(data.get('name')),
+        slug: String(data.get('slug')),
+        description: String(data.get('description')),
+      })
+      navigate(`/projects/${project.id}`)
+    } catch (value) {
+      setError(value instanceof Error ? value.message : 'Could not create project')
+    }
+  }
+  return (
+    <Page>
+      <div className="narrow">
+        <Link to="/projects" className="back">
+          ← Projects
+        </Link>
+        <span className="eyebrow">New project</span>
+        <h1>Start a delivery workspace</h1>
+        <p>Connect tasks, local repositories, and repeatable workflows around a single outcome.</p>
+        <form className="form-card" onSubmit={submit}>
+          {error && (
+            <div className="inline-error" role="alert">
+              {error}
+            </div>
+          )}
+          <label>
+            Name
+            <input name="name" maxLength={100} required />
+          </label>
+          <label>
+            Slug
+            <input name="slug" pattern="[a-z0-9]+(-[a-z0-9]+)*" required />
+            <small>Lowercase letters, numbers, and single hyphens.</small>
+          </label>
+          <label>
+            Description
+            <textarea name="description" rows={5} maxLength={2000} />
+          </label>
+          <div className="form-actions">
+            <Link className="button secondary" to="/projects">
+              Cancel
+            </Link>
+            <button className="button primary">Create project</button>
+          </div>
+        </form>
+      </div>
+    </Page>
+  )
+}

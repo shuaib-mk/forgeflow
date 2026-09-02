@@ -14,11 +14,17 @@ describe('dashboard API client', () => {
 
   it('loads organization run history with the project filter', async () => {
     await api.runs('org-id', 'project-id')
-    expect(fetchMock).toHaveBeenCalledWith('/api/v1/runs?organizationId=org-id&projectId=project-id', expect.objectContaining({ headers: expect.objectContaining({ Authorization: 'Bearer session-token' }) }))
+    expect(fetchMock).toHaveBeenCalledWith(
+      '/api/v1/runs?organizationId=org-id&projectId=project-id',
+      expect.objectContaining({ headers: expect.objectContaining({ Authorization: 'Bearer session-token' }) }),
+    )
   })
 
   it('can request a managed repository', async () => {
     await api.createRepository('project-id', { name: 'Product', localPath: 'product', initialize: true })
-    expect(fetchMock).toHaveBeenCalledWith('/api/v1/projects/project-id/repositories', expect.objectContaining({ method: 'POST', body: JSON.stringify({ name: 'Product', localPath: 'product', initialize: true }) }))
+    expect(fetchMock).toHaveBeenCalledWith(
+      '/api/v1/projects/project-id/repositories',
+      expect.objectContaining({ method: 'POST', body: JSON.stringify({ name: 'Product', localPath: 'product', initialize: true }) }),
+    )
   })
 })
