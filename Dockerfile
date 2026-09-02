@@ -1,5 +1,5 @@
 # syntax=docker/dockerfile:1.7
-FROM golang:1.24.4-alpine3.21 AS go-builder
+FROM golang:1.25.0-alpine3.21 AS go-builder
 RUN apk add --no-cache ca-certificates git
 WORKDIR /src
 COPY go.mod go.sum ./
@@ -12,7 +12,7 @@ RUN --mount=type=cache,target=/root/.cache/go-build CGO_ENABLED=0 GOOS=$TARGETOS
     CGO_ENABLED=0 GOOS=$TARGETOS GOARCH=$TARGETARCH go build -trimpath -ldflags="-s -w" -o /out/forgeflow-migrate ./cmd/forgeflow-migrate && \
     CGO_ENABLED=0 GOOS=$TARGETOS GOARCH=$TARGETARCH go build -trimpath -ldflags="-s -w" -o /out/forgeflow ./cmd/forgeflow
 
-FROM alpine:3.21.3 AS runtime
+FROM alpine:3.24.1 AS runtime
 RUN apk add --no-cache ca-certificates git && addgroup -S forgeflow && adduser -S -G forgeflow forgeflow
 WORKDIR /app
 COPY deployments/migrations ./deployments/migrations
@@ -35,4 +35,3 @@ ENTRYPOINT ["forgeflow-migrate"]
 FROM scratch AS cli
 COPY --from=go-builder /out/forgeflow /forgeflow
 ENTRYPOINT ["/forgeflow"]
-
