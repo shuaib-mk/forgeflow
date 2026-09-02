@@ -35,6 +35,7 @@ func NewServer(dependencies Dependencies) *http.Server {
 	metrics := NewMetrics()
 	router := chi.NewRouter()
 	router.Use(requestContext)
+	router.Use(func(next http.Handler) http.Handler { return withLogger(dependencies.Logger, next) })
 	router.Use(func(next http.Handler) http.Handler { return recoverer(dependencies.Logger, next) })
 	router.Use(func(next http.Handler) http.Handler { return accessLog(dependencies.Logger, metrics, next) })
 	router.Use(cors.Handler(cors.Options{AllowedOrigins: dependencies.AllowedOrigins, AllowedMethods: []string{"GET", "POST", "PATCH", "DELETE", "OPTIONS"}, AllowedHeaders: []string{"Accept", "Authorization", "Content-Type", "X-Request-ID"}, MaxAge: 300}))

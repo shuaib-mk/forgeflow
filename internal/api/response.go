@@ -53,6 +53,9 @@ func writeError(w http.ResponseWriter, r *http.Request, err error) {
 		code = "conflict"
 		message = "The request conflicts with current resource state."
 	}
+	if status >= http.StatusInternalServerError {
+		requestLogger(r.Context()).ErrorContext(r.Context(), "request failed", "error", err, "method", r.Method, "path", r.URL.Path)
+	}
 	writeJSON(w, status, errorResponse{Error: apiError{Code: code, Message: message, RequestID: logger.RequestID(r.Context()), Fields: fields}})
 }
 

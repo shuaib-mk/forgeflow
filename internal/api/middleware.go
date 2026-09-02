@@ -17,8 +17,23 @@ import (
 )
 
 type userKeyType string
+type loggerKeyType string
 
 const userKey userKeyType = "authenticated-user"
+const serverLoggerKey loggerKeyType = "server-logger"
+
+func withLogger(log *slog.Logger, next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		next.ServeHTTP(w, r.WithContext(context.WithValue(r.Context(), serverLoggerKey, log)))
+	})
+}
+
+func requestLogger(ctx context.Context) *slog.Logger {
+	if log, ok := ctx.Value(serverLoggerKey).(*slog.Logger); ok && log != nil {
+		return log
+	}
+	return slog.Default()
+}
 
 func requestContext(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {

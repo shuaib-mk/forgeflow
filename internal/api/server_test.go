@@ -1,7 +1,9 @@
 package api
 
 import (
+	"bytes"
 	"context"
+	"errors"
 	"io"
 	"log/slog"
 	"net/http"
@@ -41,6 +43,24 @@ func TestDecodeJSONRejectsUnknownAndMultipleValues(t *testing.T) {
 		}
 		if err := decodeJSON(response, request, &input); err == nil {
 			t.Fatalf("body %q expected error", body)
+		}
+	}
+}
+
+func TestWriteErrorLogsInternalFailureWithRequestContext(t *testing.T) {
+	t.Parallel()
+	var output bytes.Buffer
+	log := slog.New(slog.NewJSONHandler(&output, nil))
+	request := httptest.NewRequest(http.MethodGet, "/api/v1/projects", nil)
+	request = request.WithContext(context.WithValue(request.Context(), serverLoggerKey, log))
+	response := httptest.NewRecorder()
+	writeError(response, request, errors.New("database unavailable"))
+	if response.Code != http.StatusInternalServerError {
+		t.Fatalf("status=%d", response.Code)
+	}
+	for _, expected := range []string{"request failed", "database unavailable", "/api/v1/projects"} {
+		if !strings.Contains(output.String(), expected) {
+			t.Fatalf("log=%q missing %q", output.String(), expected)
 		}
 	}
 }
