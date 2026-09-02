@@ -24,6 +24,14 @@ func (h workflowHandler) create(w http.ResponseWriter, r *http.Request) {
 	}
 	writeJSON(w, http.StatusCreated, workflow)
 }
+func (h workflowHandler) list(w http.ResponseWriter, r *http.Request) {
+	items, err := h.service.List(r.Context(), currentUser(r.Context()), models.ID(chi.URLParam(r, "projectID")))
+	if err != nil {
+		writeError(w, r, err)
+		return
+	}
+	writeJSON(w, http.StatusOK, map[string]any{"items": items})
+}
 func (h workflowHandler) run(w http.ResponseWriter, r *http.Request) {
 	run, err := h.service.Run(r.Context(), currentUser(r.Context()), models.ID(chi.URLParam(r, "workflowID")))
 	if err != nil {
@@ -39,6 +47,15 @@ func (h workflowHandler) getRun(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	writeJSON(w, http.StatusOK, run)
+}
+func (h workflowHandler) listRuns(w http.ResponseWriter, r *http.Request) {
+	page, size := pagination(r)
+	runs, err := h.service.ListRuns(r.Context(), currentUser(r.Context()), models.ID(r.URL.Query().Get("organizationId")), models.ID(r.URL.Query().Get("projectId")), page, size)
+	if err != nil {
+		writeError(w, r, err)
+		return
+	}
+	writeJSON(w, http.StatusOK, runs)
 }
 func (h workflowHandler) logs(w http.ResponseWriter, r *http.Request) {
 	after, _ := strconv.Atoi(r.URL.Query().Get("after"))

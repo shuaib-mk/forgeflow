@@ -68,6 +68,22 @@ func (h projectHandler) listTasks(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, http.StatusOK, result)
 }
 
+func (h projectHandler) updateTask(w http.ResponseWriter, r *http.Request) {
+	var input struct {
+		Status models.TaskStatus `json:"status"`
+	}
+	if err := decodeJSON(w, r, &input); err != nil {
+		writeError(w, r, err)
+		return
+	}
+	task, err := h.tasks.UpdateStatus(r.Context(), currentUser(r.Context()), models.ID(chi.URLParam(r, "projectID")), models.ID(chi.URLParam(r, "taskID")), input.Status)
+	if err != nil {
+		writeError(w, r, err)
+		return
+	}
+	writeJSON(w, http.StatusOK, task)
+}
+
 func pagination(r *http.Request) (int, int) {
 	page, _ := strconv.Atoi(r.URL.Query().Get("page"))
 	size, _ := strconv.Atoi(r.URL.Query().Get("pageSize"))

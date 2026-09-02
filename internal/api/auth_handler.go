@@ -49,3 +49,12 @@ func (h authHandler) logout(w http.ResponseWriter, r *http.Request) {
 func (h authHandler) me(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, http.StatusOK, currentUser(r.Context()))
 }
+
+func (h authHandler) organizations(w http.ResponseWriter, r *http.Request) {
+	items, err := h.service.Organizations(r.Context(), currentUser(r.Context()).ID)
+	if err != nil {
+		writeError(w, r, err)
+		return
+	}
+	writeJSON(w, http.StatusOK, map[string]any{"items": items})
+}

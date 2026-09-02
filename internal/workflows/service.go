@@ -2,10 +2,12 @@ package workflows
 
 import (
 	"context"
+	"math"
 	"time"
 
 	"github.com/forgeflow/forgeflow/internal/authorization"
 	"github.com/forgeflow/forgeflow/internal/database"
+	"github.com/forgeflow/forgeflow/internal/domain"
 	"github.com/forgeflow/forgeflow/pkg/models"
 	"github.com/google/uuid"
 )
@@ -13,8 +15,10 @@ import (
 type WorkflowRepository interface {
 	Create(context.Context, models.Workflow) error
 	Get(context.Context, models.ID) (models.Workflow, error)
+	ListWorkflows(context.Context, models.ID) ([]models.Workflow, error)
 	CreateRun(context.Context, models.WorkflowRun) error
 	GetRun(context.Context, models.ID) (models.WorkflowRun, error)
+	ListRuns(context.Context, models.ID, models.ID, int, int) ([]models.WorkflowRun, int, error)
 	Logs(context.Context, models.ID, int) ([]string, error)
 }
 type ProjectAccess interface {
@@ -51,6 +55,12 @@ func (s *Service) Create(ctx context.Context, actor models.User, projectID model
 	}
 	return workflow, nil
 }
+func (s *Service) List(ctx context.Context, actor models.User, projectID models.ID) ([]models.Workflow, error) {
+	if err := s.authorize(ctx, actor.ID, projectID, authorization.Read); err != nil {
+		return nil, err
+	}
+	return s.repository.ListWorkflows(ctx, projectID)
+}
 func (s *Service) Run(ctx context.Context, actor models.User, workflowID models.ID) (models.WorkflowRun, error) {
 	workflow, err := s.repository.Get(ctx, workflowID)
 	if err != nil {
@@ -77,6 +87,34 @@ func (s *Service) GetRun(ctx context.Context, actor models.User, id models.ID) (
 		return models.WorkflowRun{}, err
 	}
 	return run, nil
+}
+func (s *Service) ListRuns(ctx context.Context, actor models.User, organizationID, projectID models.ID, page, pageSize int) (models.Page[models.WorkflowRun], error) {
+	if _, err := s.projects.Role(ctx, organizationID, actor.ID); err != nil {
+		return models.Page[models.WorkflowRun]{}, err
+	}
+	if projectID != "" {
+		project, err := s.projects.Get(ctx, projectID)
+		if err != nil {
+			return models.Page[models.WorkflowRun]{}, err
+		}
+		if project.OrganizationID != organizationID {
+			return models.Page[models.WorkflowRun]{}, domain.ErrNotFound
+		}
+	}
+	if page < 1 {
+		page = 1
+	}
+	if pageSize < 1 {
+		pageSize = 20
+	}
+	if pageSize > 100 {
+		pageSize = 100
+	}
+	items, total, err := s.repository.ListRuns(ctx, organizationID, projectID, pageSize, (page-1)*pageSize)
+	if err != nil {
+		return models.Page[models.WorkflowRun]{}, err
+	}
+	return models.Page[models.WorkflowRun]{Items: items, Page: page, PageSize: pageSize, TotalItems: total, TotalPages: int(math.Ceil(float64(total) / float64(pageSize)))}, nil
 }
 func (s *Service) Logs(ctx context.Context, actor models.User, id models.ID, after int) ([]string, error) {
 	run, err := s.GetRun(ctx, actor, id)

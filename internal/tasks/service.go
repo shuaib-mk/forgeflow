@@ -17,7 +17,7 @@ import (
 type TaskRepository interface {
 	Create(context.Context, models.Task) error
 	List(context.Context, models.ID, models.TaskStatus, int, int) ([]models.Task, int, error)
-	UpdateStatus(context.Context, models.ID, models.TaskStatus) (models.Task, error)
+	UpdateStatus(context.Context, models.ID, models.ID, models.TaskStatus) (models.Task, error)
 }
 type ProjectRepository interface {
 	Get(context.Context, models.ID) (models.Project, error)
@@ -96,12 +96,9 @@ func (s *Service) UpdateStatus(ctx context.Context, actor models.User, projectID
 	if status != models.TaskOpen && status != models.TaskInProgress && status != models.TaskDone && status != models.TaskCanceled {
 		return models.Task{}, domain.Invalid("status", "is not a valid task status")
 	}
-	task, err := s.tasks.UpdateStatus(ctx, taskID, status)
+	task, err := s.tasks.UpdateStatus(ctx, projectID, taskID, status)
 	if err != nil {
 		return models.Task{}, err
-	}
-	if task.ProjectID != projectID {
-		return models.Task{}, domain.ErrNotFound
 	}
 	return task, nil
 }

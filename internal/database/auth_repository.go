@@ -62,6 +62,23 @@ func (r *AuthRepository) UserByID(ctx context.Context, id models.ID) (models.Use
 	return user, nil
 }
 
+func (r *AuthRepository) OrganizationsByUser(ctx context.Context, userID models.ID) ([]models.OrganizationMembership, error) {
+	rows, err := r.db.Pool.Query(ctx, `SELECT o.id,o.name,o.slug,o.created_at,m.role FROM memberships m JOIN organizations o ON o.id=m.organization_id WHERE m.user_id=$1 ORDER BY o.name,o.id`, userID)
+	if err != nil {
+		return nil, fmt.Errorf("list user organizations: %w", err)
+	}
+	defer rows.Close()
+	items := []models.OrganizationMembership{}
+	for rows.Next() {
+		var item models.OrganizationMembership
+		if err := rows.Scan(&item.Organization.ID, &item.Organization.Name, &item.Organization.Slug, &item.Organization.CreatedAt, &item.Role); err != nil {
+			return nil, fmt.Errorf("scan user organization: %w", err)
+		}
+		items = append(items, item)
+	}
+	return items, rows.Err()
+}
+
 func (r *AuthRepository) CreateSession(ctx context.Context, id, tokenHash string, userID models.ID, expiresAt time.Time) error {
 	_, err := r.db.Pool.Exec(ctx, `INSERT INTO sessions (id, token_hash, user_id, expires_at) VALUES ($1,$2,$3,$4)`, id, tokenHash, userID, expiresAt)
 	if err != nil {

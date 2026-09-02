@@ -40,8 +40,9 @@ func NewService(store Store, projects Projects, workspaceRoot string) *Service {
 }
 
 type CreateInput struct {
-	Name      string `json:"name"`
-	LocalPath string `json:"localPath"`
+	Name       string `json:"name"`
+	LocalPath  string `json:"localPath"`
+	Initialize bool   `json:"initialize,omitempty"`
 }
 
 func (s *Service) Create(ctx context.Context, actor models.User, projectID models.ID, input CreateInput) (models.Repository, error) {
@@ -50,6 +51,11 @@ func (s *Service) Create(ctx context.Context, actor models.User, projectID model
 	}
 	if !validation.Required(input.Name, 100) {
 		return models.Repository{}, domain.Invalid("name", "must contain 1 to 100 characters")
+	}
+	if input.Initialize {
+		if err := initializeRepository(ctx, s.workspaceRoot, input.LocalPath); err != nil {
+			return models.Repository{}, domain.Invalid("localPath", err.Error())
+		}
 	}
 	path, err := safePath(s.workspaceRoot, input.LocalPath)
 	if err != nil {
@@ -68,6 +74,41 @@ func (s *Service) Create(ctx context.Context, actor models.User, projectID model
 		return models.Repository{}, err
 	}
 	return repository, nil
+}
+
+func initializeRepository(ctx context.Context, root, input string) error {
+	if strings.TrimSpace(input) == "" {
+		return errors.New("is required")
+	}
+	if filepath.IsAbs(input) {
+		return errors.New("must be a relative path when creating a managed repository")
+	}
+	root, err := filepath.Abs(root)
+	if err != nil {
+		return err
+	}
+	root, err = filepath.EvalSymlinks(root)
+	if err != nil {
+		return errors.New("workspace root is unavailable")
+	}
+	candidate, err := filepath.Abs(filepath.Join(root, input))
+	if err != nil {
+		return err
+	}
+	relative, err := filepath.Rel(root, candidate)
+	if err != nil || relative == ".." || strings.HasPrefix(relative, ".."+string(filepath.Separator)) {
+		return errors.New("must resolve beneath the configured workspace root")
+	}
+	if err := os.MkdirAll(candidate, 0o750); err != nil {
+		return fmt.Errorf("create repository directory: %w", err)
+	}
+	if _, err := os.Stat(filepath.Join(candidate, ".git")); err == nil {
+		return nil
+	}
+	if _, err := gitOutput(ctx, candidate, "init", "--initial-branch=main"); err != nil {
+		return fmt.Errorf("initialize Git repository: %w", err)
+	}
+	return nil
 }
 func (s *Service) List(ctx context.Context, actor models.User, projectID models.ID) ([]models.Repository, error) {
 	if err := s.authorize(ctx, actor.ID, projectID, authorization.Read); err != nil {

@@ -79,7 +79,15 @@ func (w *Worker) process(ctx context.Context, runID models.ID) error {
 		return err
 	}
 	definition := workflows.Definition{Name: workflow.Name, Steps: workflow.Steps}
-	result := w.Executor.Execute(ctx, definition, w.WorkspaceRoot)
+	executionDirectory, err := w.Repository.ExecutionDirectory(ctx, run.ProjectID)
+	if err != nil {
+		_ = w.Repository.CompleteRun(ctx, run.ID, models.RunFailed, err.Error())
+		return err
+	}
+	if executionDirectory == "" {
+		executionDirectory = w.WorkspaceRoot
+	}
+	result := w.Executor.Execute(ctx, definition, executionDirectory)
 	for sequence, step := range result.Steps {
 		if step.Log != "" {
 			_ = w.Repository.AppendLog(ctx, run.ID, step.StepID, sequence, step.Log)

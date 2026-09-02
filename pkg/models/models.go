@@ -39,6 +39,11 @@ type Membership struct {
 	Role           Role `json:"role"`
 }
 
+type OrganizationMembership struct {
+	Organization Organization `json:"organization"`
+	Role         Role         `json:"role"`
+}
+
 type Project struct {
 	ID             ID        `json:"id"`
 	OrganizationID ID        `json:"organizationId"`

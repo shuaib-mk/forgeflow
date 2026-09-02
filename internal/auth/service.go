@@ -23,6 +23,7 @@ type Repository interface {
 	Register(context.Context, models.User, models.Organization) error
 	UserByEmail(context.Context, string) (models.User, error)
 	UserByID(context.Context, models.ID) (models.User, error)
+	OrganizationsByUser(context.Context, models.ID) ([]models.OrganizationMembership, error)
 	CreateSession(context.Context, string, string, models.ID, time.Time) error
 	UserBySession(context.Context, string) (models.User, error)
 	DeleteSession(context.Context, string) error
@@ -104,6 +105,10 @@ func (s *Service) Authenticate(ctx context.Context, token string) (models.User, 
 		return models.User{}, domain.ErrUnauthorized
 	}
 	return s.repository.UserBySession(ctx, hashToken(token))
+}
+
+func (s *Service) Organizations(ctx context.Context, userID models.ID) ([]models.OrganizationMembership, error) {
+	return s.repository.OrganizationsByUser(ctx, userID)
 }
 
 func (s *Service) Logout(ctx context.Context, token string) error {

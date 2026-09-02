@@ -13,6 +13,7 @@ import (
 type memoryRepository struct {
 	user      models.User
 	tokenHash string
+	orgs      []models.OrganizationMembership
 }
 
 func (r *memoryRepository) Register(_ context.Context, u models.User, _ models.Organization) error {
@@ -27,6 +28,9 @@ func (r *memoryRepository) UserByEmail(_ context.Context, email string) (models.
 }
 func (r *memoryRepository) UserByID(context.Context, models.ID) (models.User, error) {
 	return r.user, nil
+}
+func (r *memoryRepository) OrganizationsByUser(context.Context, models.ID) ([]models.OrganizationMembership, error) {
+	return r.orgs, nil
 }
 func (r *memoryRepository) CreateSession(_ context.Context, _ string, hash string, _ models.ID, _ time.Time) error {
 	r.tokenHash = hash
@@ -71,6 +75,19 @@ func TestLoginUsesGenericUnauthorizedError(t *testing.T) {
 	service := NewService(&memoryRepository{})
 	if _, err := service.Login(context.Background(), "missing@example.com", "wrong"); err != domain.ErrUnauthorized {
 		t.Fatalf("error=%v", err)
+	}
+}
+
+func TestOrganizationsReturnsCurrentMemberships(t *testing.T) {
+	t.Parallel()
+	want := []models.OrganizationMembership{{Organization: models.Organization{ID: "org-id", Name: "Example"}, Role: models.RoleOwner}}
+	service := NewService(&memoryRepository{orgs: want})
+	got, err := service.Organizations(context.Background(), "user-id")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(got) != 1 || got[0].Organization.ID != "org-id" || got[0].Role != models.RoleOwner {
+		t.Fatalf("organizations=%+v", got)
 	}
 }
 
