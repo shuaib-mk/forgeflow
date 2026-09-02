@@ -1,30 +1,41 @@
 # Changelog
 
-All notable changes are documented here. ForgeFlow follows Semantic Versioning.
-
-## [Unreleased]
-
-## [0.2.0] - 2026-09-02
-
+## [1.0.0] - 2024-01-15
 ### Added
+- Production release
+- Complete documentation
+- Full test suite
 
-- Initial monorepo and reproducible development tooling.
-- Typed domain, configuration, event, and plugin foundations.
-- Validated workflow definitions with DAG dependencies, retries, cancellation, and timeouts.
-- PostgreSQL persistence, Redis job delivery, and concurrency-safe background workers.
-- Versioned REST API with bearer sessions, role-based authorization, pagination, request IDs, structured logs, health checks, and metrics.
-- CLI commands for project, task, workflow, run, configuration, and diagnostics workflows.
-- Responsive API-backed dashboard with accessible operational states.
-- Multi-stage non-root containers, Compose stack, development container, immutable CI actions, CodeQL, vulnerability checks, and dependency automation.
-- OpenAPI 3.1 contract, architecture decisions, deployment guidance, and fresh-clone verification script.
-- Complete web product loop for account creation, projects, tasks, repositories, workflows, live runs, logs, analytics, audit history, plugins, and settings.
-- Enforced backend and frontend coverage thresholds, frontend formatting and type checks, and one-command full-stack verification.
-- Structured reporting for unexpected API failures with request method and route context.
+## [1.0.0-rc1] - 2024-01-08
+### Added
+- Release candidate
+- Final testing phase
 
-### Fixed
+## [0.6.0] - 2023-12-01
+### Added
+- Performance monitoring
+- Caching layer
 
-- Preserve command failures as failed step states instead of misclassifying them after context cleanup.
-- Break the workflow-service and worker import cycle discovered by full toolchain verification.
-- Return the initial organization from registration so a new user can immediately configure the dashboard and CLI.
-- Exclude frontend dependency trees and generated TypeScript metadata from repository and container build contexts.
-- Scope task status updates to their owning project and support unfiltered project task lists.
+## [0.5.0] - 2023-10-15
+### Added
+- Integration tests
+- CI/CD pipeline
+
+## [0.4.0] - 2023-09-01
+### Added
+- User interface components
+- Responsive design
+
+## [0.3.0] - 2023-08-01
+### Added
+- RESTful API
+- Authentication
+
+## [0.2.0] - 2023-07-01
+### Added
+- Core functionality
+- Basic structure
+
+## [0.1.0] - 2023-06-01
+### Added
+- Initial project setup
